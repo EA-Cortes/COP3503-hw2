@@ -5,7 +5,30 @@ public class Caravan{
 	int b; // budget
 	int wc; // wagon cost
 
-	public static void main(String[] args){
+	public static class Edge implements Comparable<Edge>
+	{
+		int src, des, bud, cos;
+
+		Edge(int source, int destination, int budget, int cost){
+			src = source;
+			des = destination;
+			bud = budget;
+			cos = cost;
+		}
+
+		public int compareTo(Edge o)
+		{
+			return Integer.compare(cos, o.cos);
+		}
+
+		public String toString()
+		{
+			return "(" + src + "," + des + "," + bud + "," + cos + ")";
+		}
+	}
+
+	public static void main(String[] args)
+	{
 		Scanner sc = new Scanner(System.in);
 
 		// First line scans n & m
