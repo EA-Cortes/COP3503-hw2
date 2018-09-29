@@ -1,8 +1,5 @@
 import java.util.Scanner;
 import java.util.*;	
-import java.util.PriorityQueue;
-import java.util.Comparator;
-
 
 public class Caravan{	
 	public static int n; // number of cities	
@@ -35,14 +32,6 @@ public class Caravan{
 			return "(" + this.source + ", " + this.destination + ", " + this.roadCost + ", " + this.weightCap + ")";
 		}
 	}
-	// A class to represent a subset for union-find
-	class subset
-	{
-		int parent, rank;
-	}
-
-	int V, E;
-	Edge edge[];
 
 	public static class Graph
 	{
@@ -54,6 +43,7 @@ public class Caravan{
 			this.vertices = vertices;
 		}
 
+		// Auxilary function to add edges to our graph
 		public void addEdge(int source, int destination, int roadCost, int weightCap)
 		{
 			Edge edge = new Edge(source, destination, roadCost, weightCap);
@@ -62,7 +52,7 @@ public class Caravan{
 
 		public void kruskalMST()
 		{
-			// Step 1: Save all the input edges in a priority queue, sorted by weight
+			// Step 1: Sort edges by roadCost
 			PriorityQueue<Edge> pq = new PriorityQueue<>(allEdges.size(), Comparator.comparingInt(o -> o.roadCost));
 
 			for(int i = 0; i < allEdges.size(); i++)
@@ -73,49 +63,52 @@ public class Caravan{
 			int [] parent = new int[vertices];
 			makeSet(parent);
 			ArrayList<Edge> mst = new ArrayList<>();
-			int index = 0, tempWeight = 0;
+			int index = 0, tempCost = 0;
 
+			// Step 2: Pick the lowest cost edges to add to our result
 			while(index < vertices - 1)
 			{
 				Edge edge = pq.remove();
 				int x_set = find(parent, edge.source);
 				int y_set = find(parent, edge.destination);
 
+				// If creates a cycle, or a road with n wagons can't support the total weight ignore it
 				if(x_set == y_set || edge.weightCap * wagons < shipWeight){
-					// Ignore contains both
+					// Rawr xD
 				}else{
+					// These are valid edges for our MST
 					mst.add(edge);
-					tempWeight += edge.roadCost;
+					tempCost += edge.roadCost;
 					index++;
 					union(parent, x_set, y_set);
 				}
+				// If there are no edges left, break out of the while loop
 				if(pq.size() < 1)
 					break;
 			}
-			tempWeight += wagonCost * wagons;
-			
-			
-			if(tempWeight <= budget && mst.size() == n -1)
+
+			tempCost += wagonCost * wagons;			
+			if(tempCost <= budget && mst.size() == n -1)
 			{
-				 System.out.println("\nWagons: " + wagons + " Cost: " + tempWeight);
+				/* ----------- Output working MSTs -----------
+				 System.out.println("\nWagons: " + wagons + " Cost: " + tempCost);
 				 System.out.println("MST: ");
 				 printGraph(mst);
+				 */ 
 				nWagons[configs] = wagons;
-				configs++;	
-				wagons--;
-			}else{
-				wagons--;
+				configs++;					
 			}
-			
+				wagons--;			
 		}
 
+		// Auxilary function to create subset 
 		public void makeSet(int [] parent)
 		{
 			for(int i = 0; i < vertices; i++)
 				parent[i] = i;
 		}
 
-		// Function that finds if node already exists in tree
+		// Auxliary function that finds if node already exists in tree
 		public int find(int [] parent, int vertex)
 		{
 			if(parent[vertex] != vertex)
@@ -128,9 +121,7 @@ public class Caravan{
 		{
 			int x_set_parent = find(parent, x);
 			int y_set_parent = find(parent, y);
-
 			parent[y_set_parent] = x_set_parent;
-
 		}
 	
 		// Output function
@@ -142,56 +133,45 @@ public class Caravan{
 				System.out.println(edge);
 			}
 		}
-
-		public void findMSTs(Graph graph)
-		{
-			for(int k = 10; k > 0; k--)
-			{
-				// graph.kruskalMST();
-			}
-		}
-	// end of graph 		
 	}
 
 	public static void main(String[] args)
 	{
 		Scanner sc = new Scanner(System.in);
-
-		// First line scans n & m
-		// n = number of cities
-		// m = number of roads
-		n = sc.nextInt();
-		m = sc.nextInt();
-
-		Graph graph = new Graph(n);
+		n = sc.nextInt(); 				// number of cities
+		m = sc.nextInt(); 				// number of possible roads
+		Graph graph = new Graph(n);		// Init our graph
 
 		for(int i = 0; i < m; i++)
-		// The following m lines take 4 integers, to describe the road	
 		{
+			// The following m lines scan 4 integers, to describe the road	
 			int origin = sc.nextInt() - 1;
 			int destination = sc.nextInt() - 1;
 			int roadCost = sc.nextInt();
 			int weightLimit = sc.nextInt();
 			
+			//	adds those 4 integers into our list of Edges
 			graph.addEdge(origin, destination, roadCost, weightLimit);
 		}
 
-		budget = sc.nextInt();
-		wagonCost = sc.nextInt();
-		shipWeight = sc.nextInt();
+		budget = sc.nextInt();			// Total Budget
+		wagonCost = sc.nextInt();		// Cost of each wagon
+		shipWeight = sc.nextInt();		// Total weight
 
+		// We're assuming we can buy 10 or less wagons. 
+		// We're going to iterate through the cases
 		for(int k = 10; k > 0; k--)
 		{
 			graph.kruskalMST();
 		}
 		
+		// Output the number of working configurations as well as how many wagons there are in each
 		System.out.println(configs);
 		for(int k = configs - 1; k >= 0; k--){
 			System.out.print(nWagons[k] + " ");
 		}
 
 		System.out.println();	
-		
 	}
 }
 
