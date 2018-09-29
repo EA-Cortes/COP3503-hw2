@@ -5,21 +5,19 @@ import java.util.Comparator;
 
 
 public class Caravan{	
-
 	public static int n; // number of cities	
 	public static int m; // number of possible roads
 	public static int budget; // budget
 	public static int wagonCost; // wagon cost
 	public static int shipWeight; // Total weight of a complete shipment
-
-	public static int configs = 0;
-	public static int wagons = 6;
-	public static int nWagons[] = new int[10];
+	public static int configs = 0;	// Accounts for the total number of working configurations
+	public static int wagons = 10;	// Greedy assumption of the number of wagons, that we're right
+	public static int nWagons[] = new int[10]; // Working configurations will be stored here
 
 	public static class Edge implements Comparable<Edge>
 	{
 		int source, destination, roadCost, weightCap;
-
+		// Edge Constructor
 		Edge(int source, int destination, int roadCost, int weightCap){
 			this.source = source;
 			this.destination = destination;
@@ -64,6 +62,7 @@ public class Caravan{
 
 		public void kruskalMST()
 		{
+			// Step 1: Save all the input edges in a priority queue, sorted by weight
 			PriorityQueue<Edge> pq = new PriorityQueue<>(allEdges.size(), Comparator.comparingInt(o -> o.roadCost));
 
 			for(int i = 0; i < allEdges.size(); i++)
@@ -74,7 +73,7 @@ public class Caravan{
 			int [] parent = new int[vertices];
 			makeSet(parent);
 			ArrayList<Edge> mst = new ArrayList<>();
-			int index = 0;
+			int index = 0, tempWeight = 0;
 
 			while(index < vertices - 1)
 			{
@@ -85,20 +84,29 @@ public class Caravan{
 				if(x_set == y_set || edge.weightCap * wagons < shipWeight){
 					// Ignore contains both
 				}else{
-					mst.add(edge);						
+					mst.add(edge);
+					tempWeight += edge.roadCost;
 					index++;
 					union(parent, x_set, y_set);
 				}
+				if(pq.size() < 1)
+					break;
 			}
-
-		
-			nWagons[configs] = wagons;
-			configs++;
-
-			System.out.println("\nMST: ");
-			printGraph(mst);
-		
-
+			tempWeight += wagonCost * wagons;
+			
+			
+			if(tempWeight <= budget && mst.size() == n -1)
+			{
+				 System.out.println("\nWagons: " + wagons + " Cost: " + tempWeight);
+				 System.out.println("MST: ");
+				 printGraph(mst);
+				nWagons[configs] = wagons;
+				configs++;	
+				wagons--;
+			}else{
+				wagons--;
+			}
+			
 		}
 
 		public void makeSet(int [] parent)
@@ -135,6 +143,13 @@ public class Caravan{
 			}
 		}
 
+		public void findMSTs(Graph graph)
+		{
+			for(int k = 10; k > 0; k--)
+			{
+				// graph.kruskalMST();
+			}
+		}
 	// end of graph 		
 	}
 
@@ -150,41 +165,33 @@ public class Caravan{
 
 		Graph graph = new Graph(n);
 
-
-
 		for(int i = 0; i < m; i++)
 		// The following m lines take 4 integers, to describe the road	
 		{
-			// 1st int: index of one of the connected cities (starting at 1) 
-			int A = sc.nextInt() - 1;
-
-			// 2nd int: index of the other connected city (starting at 1)	
-			int B = sc.nextInt() - 1;
-
-			// 3rd int: Cost to build the road ( n < 10,000,000)
-			int C = sc.nextInt();
-		
-			// 4th int: Weight capacity of the road ( n < 10,000,000)
-			int W = sc.nextInt();
+			int origin = sc.nextInt() - 1;
+			int destination = sc.nextInt() - 1;
+			int roadCost = sc.nextInt();
+			int weightLimit = sc.nextInt();
 			
-			graph.addEdge(A, B, C, W);
+			graph.addEdge(origin, destination, roadCost, weightLimit);
 		}
 
 		budget = sc.nextInt();
 		wagonCost = sc.nextInt();
 		shipWeight = sc.nextInt();
 
-		graph.kruskalMST();
-
+		for(int k = 10; k > 0; k--)
+		{
+			graph.kruskalMST();
+		}
+		
 		System.out.println(configs);
-		for(int k = 0; k < configs; k++){
+		for(int k = configs - 1; k >= 0; k--){
 			System.out.print(nWagons[k] + " ");
 		}
 
 		System.out.println();	
-		// First line of output should contain k
-		// where k is the number of possible vehicle counts that can enable the transportation of shipment in one trip
-		// Second line of output should contain k distinct integers between [1, 10]
+		
 	}
 }
 
@@ -197,7 +204,7 @@ public class Caravan{
 2 3 5 30
 3 4 10 10
 2 4 1 5
-27 1 51
+71 6 49
 
 Case 1:
 27 1 51
