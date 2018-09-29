@@ -12,6 +12,10 @@ public class Caravan{
 	public static int wagonCost; // wagon cost
 	public static int shipWeight; // Total weight of a complete shipment
 
+	public static int configs = 0;
+	public static int wagons = 6;
+	public static int nWagons[] = new int[10];
+
 	public static class Edge implements Comparable<Edge>
 	{
 		int source, destination, roadCost, weightCap;
@@ -64,16 +68,12 @@ public class Caravan{
 
 			for(int i = 0; i < allEdges.size(); i++)
 			{	
-				// System.out.println(allEdges.get(i));
 				pq.add(allEdges.get(i));
 			}			
 
 			int [] parent = new int[vertices];
-
 			makeSet(parent);
-
 			ArrayList<Edge> mst = new ArrayList<>();
-
 			int index = 0;
 
 			while(index < vertices - 1)
@@ -82,14 +82,18 @@ public class Caravan{
 				int x_set = find(parent, edge.source);
 				int y_set = find(parent, edge.destination);
 
-				if(x_set == y_set){
+				if(x_set == y_set || edge.weightCap * wagons < shipWeight){
 					// Ignore contains both
 				}else{
-					mst.add(edge);
+					mst.add(edge);						
 					index++;
 					union(parent, x_set, y_set);
 				}
 			}
+
+		
+			nWagons[configs] = wagons;
+			configs++;
 
 			System.out.println("\nMST: ");
 			printGraph(mst);
@@ -146,17 +150,10 @@ public class Caravan{
 
 		Graph graph = new Graph(n);
 
-		ArrayList<Edge>[] adjList = new ArrayList[n];
-		for(int i = 0; i < n; i++)
-		{
-			adjList[i] = new ArrayList<Edge>();
-		}
+
 
 		for(int i = 0; i < m; i++)
-		// The following m lines take 4 integers, to describe the road
-		
-		
-		
+		// The following m lines take 4 integers, to describe the road	
 		{
 			// 1st int: index of one of the connected cities (starting at 1) 
 			int A = sc.nextInt() - 1;
@@ -169,10 +166,7 @@ public class Caravan{
 		
 			// 4th int: Weight capacity of the road ( n < 10,000,000)
 			int W = sc.nextInt();
-
-			Edge e1 = new Edge( A, B, C, W);
-
-			adjList[A].add(e1);
+			
 			graph.addEdge(A, B, C, W);
 		}
 
@@ -182,7 +176,12 @@ public class Caravan{
 
 		graph.kruskalMST();
 
+		System.out.println(configs);
+		for(int k = 0; k < configs; k++){
+			System.out.print(nWagons[k] + " ");
+		}
 
+		System.out.println();	
 		// First line of output should contain k
 		// where k is the number of possible vehicle counts that can enable the transportation of shipment in one trip
 		// Second line of output should contain k distinct integers between [1, 10]
@@ -216,7 +215,3 @@ Case 3:
 5 6 10
 
 */
-
-// Sort them based on cost
-// add them to MST starting with lowest cost first
-// but if the carry capacity of the road is less than the max carry capacity, skip it also
